@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useSignUp } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
-import React from 'react'
 
 const RegisterPage = () => {
     const { isLoaded, signUp, setActive } = useSignUp();
@@ -27,25 +26,46 @@ const RegisterPage = () => {
                 first_name: firstName,
                 last_name: lastName,
                 email_address: email,
-                password
-            })
+                password,
+            });
 
             // send email for verification
-            await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
+            await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
 
             // change UI
             setPendingVerification(true);
-        } catch (error) {
-            console.log(error)
+        } catch (err) {
+            console.error(err)
         }
     };
 
     // Verify user email code
-    const onPressVerify = async (e) => { };
+    const onPressVerify = async (e) => {
+        e.preventDefault();
+        if (!isLoaded) {
+            return;
+        }
+
+        try {
+            const completeSignUp = await signUp.attemptEmailAddressVerification({
+                code,
+            });
+            if (completeSignUp.status !== 'complete') {
+                // check the res to see the rrror
+                console.log(JSON.stringify(completeSignUp, null, 2));
+            }
+            if (completeSignUp.status === 'complete') {
+                await setActive({ session: completeSignUp.createdSessionId });
+                router.push('/');
+            }
+        } catch (err) {
+            console.error(JSON.stringify(err, null, 2));
+        }
+    };
 
     return (
         <div className='border p-5 rounded' style={{ width: '500px' }}>
-            <h1 className="text-2xl m-4">Register</h1>
+            <h1 className="text-2xl mb-4">Register</h1>
             {!pendingVerification && (
                 <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
                     <div>
@@ -120,6 +140,7 @@ const RegisterPage = () => {
                         />
                         <button
                             type='submit'
+                            onClick={onPressVerify}
                             className="w-full text-white bg-blue-600 hover:bg-blue-700 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
                         >
                             Verify Email
