@@ -15,7 +15,30 @@ const RegisterPage = () => {
     const router = useRouter();
 
     // form submit
-    const handleSubmit = async (e) => { };
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!isLoaded) {
+            return;
+        }
+
+        try {
+            await signUp.create({
+                first_name: firstName,
+                last_name: lastName,
+                email_address: email,
+                password
+            })
+
+            // send email for verification
+            await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
+
+            // change UI
+            setPendingVerification(true);
+        } catch (error) {
+            console.log(error)
+        }
+    };
 
     // Verify user email code
     const onPressVerify = async (e) => { };
