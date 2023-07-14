@@ -26,6 +26,11 @@ const Header = () => {
                             </Link>
                         </>
                     )}
+                    {userId && (
+                        <Link href="profile" className='text-gray-300 hover:text-white mr-4'>
+                            Profile
+                        </Link>
+                    )}
                     <div className="ml-auto">
                         <UserButton afterSignOutUrl='/' />
                     </div>
